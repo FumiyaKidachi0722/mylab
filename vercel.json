@@ -9,7 +9,11 @@
   "routes": [
     {
       "src": "/run",
-      "dest": "app.ts"
+      "dest": "app.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ]
     },
     {
       "src": "/(.*)",

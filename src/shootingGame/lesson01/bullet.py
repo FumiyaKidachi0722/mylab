@@ -12,19 +12,18 @@ class Bullet(pygame.sprite.Sprite):
     This class handles the behavior and movement of bullets.
     """
 
-    def __init__(self, pos, speed, enemies):
+    def __init__(self, pos, speed):
         super().__init__()
         self.speed = speed
-        self.enemies = enemies
         self.image = pygame.Surface((10, 10))
         self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect(center=pos)
 
-    def update(self, *args):
+    def update(self):
         """
         Update the bullet's position.
         This method is called to update the bullet's position based on its speed.
         """
-        self.rect.y -= self.speed  # 弾を上方向に移動させる
+        self.rect.y -= self.speed
         if self.rect.bottom < 0:
-            self.kill()  # 弾が画面外に出たら弾を削除する
+            self.kill()

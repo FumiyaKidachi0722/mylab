@@ -25,6 +25,6 @@ class Bullet(pygame.sprite.Sprite):
         Update the bullet's position.
         This method is called to update the bullet's position based on its speed.
         """
-        self.rect.y -= self.speed  # 弾を上方向に移動させる
+        self.rect.y -= self.speed
         if self.rect.bottom < 0:
-            self.kill()  # 弾が画面外に出たら弾を削除する
+            self.kill()

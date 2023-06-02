@@ -39,17 +39,26 @@
      ```
 
      - 再起動
+     - vscode
+     - ```
+       $ conda activate shootingGame
+       ```
 
 ### lesson 01
 
 ゲームの実装
 以下の Python スクリプトは、プレイヤーが敵を倒すシューティングゲームの基本的な実装を示しています：
 
-#### main.py（メインのゲーム実行ファイル）：
+<details><summary>main.py</summary>
 
 ```python
-import pygame
+"""
+This module contains the main.
+"""
+
 import sys
+import pygame
+from pygame.locals import QUIT, K_SPACE
 from player import Player
 from bullet import Bullet
 from enemy import Enemy
@@ -58,78 +67,132 @@ from enemy import Enemy
 WIDTH, HEIGHT = 800, 600  # ゲームウィンドウの幅と高さ
 FPS = 60  # フレームレート
 PLAYER_SPEED = 5  # プレイヤーの移動速度
-BULLET_SPEED = 10  # 弾の速度
+BULLET_SPEED = 5  # 弾の速度
 ENEMY_SPEED = 2  # 敵の速度
 
-# Pygameの初期化
-pygame.init()
 
-# ゲームウィンドウの作成
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+def run_game():
+    """
+    ゲームを実行するメイン関数です。
+    """
+    # Pygameの初期化
+    pygame.init()
+    pygame.font.init()  # フォントの初期化
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-# クロックの作成
-clock = pygame.time.Clock()
+    # クロックの作成
+    clock = pygame.time.Clock()
 
-# スプライトグループの作成
-all_sprites = pygame.sprite.Group()
-bullets = pygame.sprite.Group()
-enemies = pygame.sprite.Group()
+    game_started = False  # ゲームが開始されたかどうかのフラグ
 
-# プレイヤーの作成
-player = Player(WIDTH, HEIGHT, PLAYER_SPEED)
-all_sprites.add(player)
+    # スプライトグループの作成
+    all_sprites = pygame.sprite.Group()
+    bullets = pygame.sprite.Group()
+    enemies = pygame.sprite.Group()
 
-# 敵の作成
-enemy = Enemy(WIDTH, HEIGHT, ENEMY_SPEED)
-all_sprites.add(enemy)
-enemies.add(enemy)
+    # ゲームループ
+    running = True
+    bullet_fired = False  # 弾丸が発射されたかどうかのフラグ
 
-# ゲームループ
-running = True
-while running:
-    # イベントの処理
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                bullet = Bullet(player.rect.center, BULLET_SPEED)
-                all_sprites.add(bullet)
-                bullets.add(bullet)
+    while running:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
 
-    # アップデート
-    all_sprites.update()
+        if not game_started:
+            keys = pygame.key.get_pressed()
+            # ゲーム開始
+            game_started = True
 
-    # 弾と敵の衝突のチェック
-    for bullet in bullets:
-        if pygame.sprite.spritecollide(bullet, enemies, True):
-            bullet.kill()
+            # プレイヤーの作成
+            player = Player(WIDTH, HEIGHT, PLAYER_SPEED)
+            all_sprites.add(player)
+
+            # 敵の作成
             enemy = Enemy(WIDTH, HEIGHT, ENEMY_SPEED)
             all_sprites.add(enemy)
             enemies.add(enemy)
 
-    # 描画
-    screen.fill((0, 0, 0))
-    all_sprites.draw(screen)
+        if running:
+            keys = pygame.key.get_pressed()
+            if keys[K_SPACE] and not bullet_fired:
+                # スペースキーが押下されたら弾丸を発射
+                bullet = Bullet(player.rect.center, BULLET_SPEED, enemies)
+                all_sprites.add(bullet)
+                bullets.add(bullet)
+                bullet_fired = True
+            elif not keys[K_SPACE]:
+                bullet_fired = False
 
-    # 描画したものを表示
-    pygame.display.flip()
+            screen.fill((0, 0, 0))
 
-    # フレームレートの調整
-    clock.tick(FPS)
+            if game_started:
+                all_sprites.update()  # スプライトの位置を更新
 
-# Pygameの終了
-pygame.quit()
-sys.exit()
+                # 敵が画面から消えた場合に新たに敵を生成する
+                if len(enemies) == 0:
+                    enemy = Enemy(WIDTH, HEIGHT, ENEMY_SPEED)
+                    all_sprites.add(enemy)
+                    enemies.add(enemy)
+
+                # 衝突検出
+                collisions = pygame.sprite.groupcollide(
+                    enemies, bullets, True, True)
+                for _ in collisions:
+                    # 敵を再度生成してスプライトグループに追加する
+                    enemy = Enemy(WIDTH, HEIGHT, ENEMY_SPEED)
+                    all_sprites.add(enemy)
+                    enemies.add(enemy)
+
+                all_sprites.draw(screen)  # 全てのスプライトを描画
+                bullets.draw(screen)  # 弾丸のスプライトグループを描画
+                enemies.draw(screen)  # 敵のスプライトグループを描画
+
+            pygame.display.flip()
+            clock.tick(FPS)
+
+    pygame.quit()
+    sys.exit()
+
+
+def update(self, *args):
+    """
+    敵の位置を更新する関数です。
+    敵の位置をスピードに基づいて更新するために呼び出されます。
+    """
+    self.rect.y += self.speed
+    if self.rect.top > self.height:
+        self.rect.bottom = 0
+
+    # 衝突検出
+    collisions = pygame.sprite.spritecollide(self, args[0], True)
+    if collisions:
+        self.kill()
+
+
+if __name__ == "__main__":
+    run_game()
 ```
 
-#### player.py
+</details>
+
+<details><summary>player.py</summary>
 
 ```python
+"""
+This module contains the Player class for the game.
+"""
+
 import pygame
 
 
 class Player(pygame.sprite.Sprite):
+    """
+    Represents a player object in the game.
+
+    This class handles the behavior and movement of the player.
+    """
+
     def __init__(self, width, height, speed):
         super().__init__()
         self.width = width
@@ -139,47 +202,81 @@ class Player(pygame.sprite.Sprite):
         self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect(center=(width/2, height/2))
 
-    def update(self):
-        keys = pygame.key.get_pressed()
+    def update(self, *args):
+        """
+        Update the player's position.
+        This method is called to update the player's position based on keyboard input.
+        """
+        keys = pygame.key.get_pressed()  # キー入力を取得
         if keys[pygame.K_LEFT]:
-            self.rect.x -= self.speed
+            self.rect.x -= self.speed  # 左キーが押されている場合、プレイヤーを左に移動
         if keys[pygame.K_RIGHT]:
-            self.rect.x += self.speed
+            self.rect.x += self.speed  # 右キーが押されている場合、プレイヤーを右に移動
         if keys[pygame.K_UP]:
-            self.rect.y -= self.speed
+            self.rect.y -= self.speed  # 上キーが押されている場合、プレイヤーを上に移動
         if keys[pygame.K_DOWN]:
-            self.rect.y += self.speed
+            self.rect.y += self.speed  # 下キーが押されている場合、プレイヤーを下に移動
 
+        # プレイヤーの移動範囲をゲーム画面内に制限する
         self.rect.clamp_ip(pygame.Rect(0, 0, self.width, self.height))
 ```
 
-#### bullet.py
+</details>
+
+<details><summary>bullet.py</summary>
 
 ```python
+"""
+This module contains the Bullet class for the game.
+"""
+
 import pygame
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, pos, speed):
+    """
+    Represents a bullet object in the game.
+
+    This class handles the behavior and movement of bullets.
+    """
+
+    def __init__(self, pos, speed, enemies):
         super().__init__()
         self.speed = speed
+        self.enemies = enemies
         self.image = pygame.Surface((10, 10))
         self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect(center=pos)
 
-    def update(self):
-        self.rect.y -= self.speed
+    def update(self, *args):
+        """
+        Update the bullet's position.
+        This method is called to update the bullet's position based on its speed.
+        """
+        self.rect.y -= self.speed  # 弾を上方向に移動させる
         if self.rect.bottom < 0:
-            self.kill()
+            self.kill()  # 弾が画面外に出たら弾を削除する
 ```
 
-#### enemy.py
+</details>
+
+<details><summary>enemy.py</summary>
 
 ```python
+"""
+This module contains the Enemy class for the game.
+"""
+
 import pygame
 
 
 class Enemy(pygame.sprite.Sprite):
+    """
+    Represents an enemy object in the game.
+
+    This class handles the behavior and movement of enemies.
+    """
+
     def __init__(self, width, height, speed):
         super().__init__()
         self.width = width
@@ -187,13 +284,19 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = speed
         self.image = pygame.Surface((50, 50))
         self.image.fill((255, 0, 0))
-        self.rect = self.image.get_rect(center=(width/2, 0))
+        self.rect = self.image.get_rect(center=(width / 2, 0))
 
-    def update(self):
-        self.rect.y += self.speed
-        if self.rect.top > self.height:
-            self.rect.bottom = 0
+    def update(self, *args):
+        """
+        Update the enemy's position.
+        This method is called to update the enemy's position based on its speed.
+        """
+        self.rect.y += self.speed  # 敵を下方向に移動させる
+        if self.rect.bottom > self.height:
+            self.kill()  # 敵が画面から消えたら敵を削除する
 ```
+
+</details>
 
 ## 実行
 
@@ -215,44 +318,105 @@ $ python main.py
 ---
 
 # 課題
+1. - [ ]  [スタートとエンド画面](#始まりと終わり)
+    <details>
+    - 
+    <details>
 
-- [x] 敵に衝突しない
+- [x] [敵に衝突しない](#敵に衝突しない)
 　　<details>
    - 衝突判定の処理を修正する必要があります。現在のコードでは敵と弾が衝突すると敵が消えてしまいますが、敵とプレイヤーの衝突も判定する必要があります。
    - 衝突判定にはpygame.sprite.spritecollide()関数を使用します。プレイヤーと敵のスプライトグループの衝突判定を行い、衝突があった場合にゲームオーバーの処理を追加します。
   </details>
-- [ ] 敵の動きのバリエーションを追加する
+- [ ] [敵の動きのバリエーションを追加する](#敵の動きのバリエーションを追加する)
   <details>
    - 敵の動きをランダムにするなど、バリエーションを追加するためには、敵のupdate()メソッドを修正します。
    - randomモジュールを使用して、敵の移動方向や速度をランダムに設定することができます。
   </details>
-- [ ] 複数の敵を同時に出現させる
+- [ ] [複数の敵を同時に出現させる](#複数の敵を同時に出現させる)
   <details>
    - Enemyクラスのインスタンスを複数作成し、それぞれの敵を別々のスプライトグループに追加します。
    - ゲームループ内で新しい敵を生成し、スプライトグループに追加することで、複数の敵を同時に出現させることができます。
   </details>
-- [ ] 敵がプレイヤーに向かって攻撃する
+- [ ] [敵がプレイヤーに向かって攻撃する](#敵がプレイヤーに向かって攻撃する)
   <details>
    - 敵がプレイヤーに向かって攻撃するためには、敵の座標とプレイヤーの座標の差を計算し、移動方向を設定します。
    - Playerクラスのインスタンスを敵のupdate()メソッドに渡し、敵がプレイヤーを追いかけるようにします。
   </details>
-- [ ] スコアの追跡と表示
+- [ ] [スコアの追跡と表示](#スコアの追跡と表示)
   <details>
    - スコアを管理する変数を追加し、敵を倒すたびにスコアを増やします。
    - スコアを表示するためには、Pygameの描画機能を使用してスコアを画面に表示します。
   </details>
-- [ ] ゲームオーバーの条件と画面表示
+- [ ] [ゲームオーバーの条件と画面表示](#ゲームオーバーの条件と画面表示)
   <details>
    - ゲームオーバーの条件を設定し、ゲームオーバー時には画面にゲームオーバーのメッセージを表示します。
    - ゲームオーバー時には、プレイヤーの操作を停止し、敵の出現を停止します。
   </details>
-- [ ] 音楽や効果音の追加
+- [ ] [音楽や効果音の追加](#音楽や効果音の追加)
   <details>
    - Pygameのサウンド機能を使用して、BGMや効果音を再生します。
    - ゲームの開始時や敵を倒した時など、適切なタイミングで音楽や効果音を再生することができます。
   </details>
-- [ ] レベルアップやパワーアップの機能の追加
+- [ ] [レベルアップやパワーアップの機能の追加](#レベルアップやパワーアップの機能の追加)
   <details>
    - レベルアップやパワーアップの機能を追加するには、プレイヤーの能力や敵の難易度を調整します。
    - レベルアップ時には、プレイヤーの移動速度や弾の速度を増加させるなどの変更を加えます。
   </details>
+
+## 始まりと終わり
+  1. d
+
+  <details><summary>start_screen.py</summary>
+
+  ```python
+
+
+  ```
+
+  </details>
+
+## 敵に衝突しない
+  1. Player クラスに check_collision() メソッドを追加します。このメソッドは、プレイヤーと敵キャラの衝突をチェックします。
+  1. Enemy クラスに check_collision() メソッドを追加します。このメソッドは、敵キャラと弾の衝突をチェックします。
+  1. Player クラスと Enemy クラスの update() メソッド内で、衝突チェックの呼び出しを追加します。
+  1. 弾と敵の衝突をチェックする部分で、衝突した敵キャラを削除するのではなく、プレイヤーとの衝突判定を行い、衝突した場合はゲームを終了するようにします。
+
+main.py<details>
+  ```python
+  ```
+
+</details>
+
+player.py <details>
+  ```python
+  ```
+</details>
+
+
+enemy.py <details>
+  ```python
+  ```
+</details>
+
+
+## 敵の動きのバリエーションを追加する
+* 
+
+## 複数の敵を同時に出現させる
+* 
+
+## 敵がプレイヤーに向かって攻撃する
+* 
+
+## スコアの追跡と表示
+* 
+
+## ゲームオーバーの条件と画面表示
+* 
+
+## 音楽や効果音の追加
+* 
+
+## レベルアップやパワーアップの機能の追加
+* 

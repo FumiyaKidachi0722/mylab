@@ -1,5 +1,5 @@
 """
-This module contains the main.
+このモジュールはゲームのメインファイルです。
 """
 
 import sys
@@ -8,6 +8,8 @@ from pygame.locals import QUIT, K_SPACE
 from player import Player
 from bullet import Bullet
 from enemy import Enemy
+from start_screen import StartScreen
+from gameover_screen import GameOverScreen
 
 # ゲームの定数
 WIDTH, HEIGHT = 800, 600  # ゲームウィンドウの幅と高さ
@@ -19,7 +21,7 @@ ENEMY_SPEED = 2  # 敵の速度
 
 def run_game():
     """
-    ゲームを実行するメイン関数です。
+    aaa
     """
     # Pygameの初期化
     pygame.init()
@@ -47,17 +49,28 @@ def run_game():
 
         if not game_started:
             keys = pygame.key.get_pressed()
-            # ゲーム開始
-            game_started = True
+            if keys[K_SPACE]:
+                # ゲーム開始
+                game_started = True
+                # ゲームオーバー画面をリセット
+                all_sprites.empty()
+                bullets.empty()
+                enemies.empty()
 
-            # プレイヤーの作成
-            player = Player(WIDTH, HEIGHT, PLAYER_SPEED)
-            all_sprites.add(player)
+                # プレイヤーの作成
+                player = Player(WIDTH, HEIGHT, PLAYER_SPEED)
+                all_sprites.add(player)
 
-            # 敵の作成
-            enemy = Enemy(WIDTH, HEIGHT, ENEMY_SPEED)
-            all_sprites.add(enemy)
-            enemies.add(enemy)
+                # 敵の作成
+                enemy = Enemy(WIDTH, HEIGHT, ENEMY_SPEED)
+                all_sprites.add(enemy)
+                enemies.add(enemy)
+            else:
+                screen.fill((0, 0, 0))
+                StartScreen.draw(screen)  # スタート画面を描画
+                pygame.display.flip()
+                clock.tick(FPS)
+                continue
 
         if running:
             keys = pygame.key.get_pressed()
@@ -93,9 +106,14 @@ def run_game():
                 all_sprites.draw(screen)  # 全てのスプライトを描画
                 bullets.draw(screen)  # 弾丸のスプライトグループを描画
                 enemies.draw(screen)  # 敵のスプライトグループを描画
+            else:
+                StartScreen.draw(screen)  # スタート画面を描画
 
             pygame.display.flip()
             clock.tick(FPS)
+
+    # ゲームオーバー画面の表示
+    GameOverScreen.draw(screen)
 
     pygame.quit()
     sys.exit()
@@ -103,8 +121,8 @@ def run_game():
 
 def update(self, *args):
     """
-    敵の位置を更新する関数です。
-    敵の位置をスピードに基づいて更新するために呼び出されます。
+    Update the enemy's position.
+    This method is called to update the enemy's position based on its speed.
     """
     self.rect.y += self.speed
     if self.rect.top > self.height:

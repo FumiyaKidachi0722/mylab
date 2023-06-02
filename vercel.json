@@ -3,7 +3,7 @@
   "builds": [
     {
       "src": "app.ts",
-      "use": "@vercel/node@1.9.0"
+      "use": "@vercel/node"
     },
     {
       "src": "src/bingo/main.py",

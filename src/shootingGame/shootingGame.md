@@ -298,6 +298,7 @@ class Enemy(pygame.sprite.Sprite):
 
 </details>
 
+
 ## 実行
 
 ```
@@ -365,14 +366,163 @@ $ python main.py
   </details>
 
 ## 始まりと終わり
-  1. d
+  1. スタート画面とゲームオーバー画面を作成
 
   <details><summary>start_screen.py</summary>
 
-  ```python
+```python
+"""
+This module contains the StartScreen class for the game.
+"""
+import pygame
 
 
-  ```
+class StartScreen(pygame.sprite.Sprite):
+    """
+    Represents the start screen of the game.
+
+    This class handles the drawing and behavior of the start screen.
+    """
+
+    clock = pygame.time.Clock()
+
+    @classmethod
+    def draw(cls, screen):
+        """
+        Draw the start screen.
+
+        This method draws the title and start text on the screen.
+        """
+
+        pygame.font.init()  # フォントの初期化
+
+        font = pygame.font.Font(None, 36)
+        title_text = font.render(
+            "Shooting Game", True, (255, 255, 255))  # タイトルテキストの作成
+        start_text = font.render(
+            "Press SPACE to start", True, (255, 255, 255))  # 開始テキストの作成
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        running = False
+
+            screen.fill((0, 0, 0))
+            screen.blit(title_text, (screen.get_width() // 2 -
+                        title_text.get_width() // 2, screen.get_height() // 2 - 50))  # タイトルテキストの描画
+            screen.blit(start_text, (screen.get_width() // 2 -
+                        start_text.get_width() // 2, screen.get_height() // 2))  # 開始テキストの描画
+            pygame.display.flip()
+            cls.clock.tick(60)
+
+        pygame.font.quit()  # フォントの終了処理
+```
+
+  </details>
+
+  <details><summary>gameover_screen.py</summary>
+
+```python
+"""
+This module contains the GameOverScreen class for the game.
+"""
+import pygame
+
+
+class GameOverScreen(pygame.sprite.Sprite):
+    """
+    ゲームオーバースクリーンを表すクラスです。
+
+    このクラスはゲームオーバースクリーンの表示と振る舞いを管理します。
+    """
+
+    clock = pygame.time.Clock()
+
+    @classmethod
+    def draw(cls, screen):
+        """
+        指定された画面上にゲームオーバースクリーンを描画します。
+
+        Args:
+            screen: ゲームオーバースクリーンを描画する画面のサーフェス
+        """
+        pygame.font.init()  # フォントの初期化
+
+        font = pygame.font.Font(None, 36)
+        gameover_text = font.render("ゲームオーバー", True, (255, 255, 255))
+        restart_text = font.render(
+            "スペースキーを押して再開", True, (255, 255, 255))
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        running = False
+
+            screen.fill((0, 0, 0))
+            screen.blit(gameover_text, (screen.get_width(
+            ) // 2 - gameover_text.get_width() // 2, screen.get_height() // 2 - 50))
+            screen.blit(restart_text, (screen.get_width() // 2 -
+                        restart_text.get_width() // 2, screen.get_height() // 2))
+            pygame.display.flip()
+            cls.clock.tick(60)
+
+        pygame.font.quit()  # フォントの終了処理
+```
+
+  </details>
+
+  <details><summary>main.py</summary>
+
+```python
+...
+from start_screen import StartScreen
+from gameover_screen import GameOverScreen
+
+...
+
+            if keys[K_SPACE]:
+                # ゲーム開始
+                game_started = True
+                # ゲームオーバー画面をリセット
+                all_sprites.empty()
+                bullets.empty()
+                enemies.empty()
+
+                # プレイヤーの作成
+                player = Player(WIDTH, HEIGHT, PLAYER_SPEED)
+                all_sprites.add(player)
+
+                # 敵の作成
+                enemy = Enemy(WIDTH, HEIGHT, ENEMY_SPEED)
+                all_sprites.add(enemy)
+                enemies.add(enemy)
+            else:
+                screen.fill((0, 0, 0))
+                StartScreen.draw(screen)  # スタート画面を描画
+                pygame.display.flip()
+                clock.tick(FPS)
+                continue
+            
+...
+
+            else:
+                StartScreen.draw(screen)  # スタート画面を描画
+
+...
+
+    # ゲームオーバー画面の表示
+    GameOverScreen.draw(screen)
+```
 
   </details>
 
@@ -382,19 +532,19 @@ $ python main.py
   1. Player クラスと Enemy クラスの update() メソッド内で、衝突チェックの呼び出しを追加します。
   1. 弾と敵の衝突をチェックする部分で、衝突した敵キャラを削除するのではなく、プレイヤーとの衝突判定を行い、衝突した場合はゲームを終了するようにします。
 
-main.py<details>
+<details><summary>main.py</summary>
   ```python
   ```
 
 </details>
 
-player.py <details>
+<details><summary>player.py</summary>
   ```python
   ```
 </details>
 
 
-enemy.py <details>
+<details><summary>enemy.py</summary>
   ```python
   ```
 </details>

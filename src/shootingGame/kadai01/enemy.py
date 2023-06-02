@@ -26,6 +26,6 @@ class Enemy(pygame.sprite.Sprite):
         Update the enemy's position.
         This method is called to update the enemy's position based on its speed.
         """
-        self.rect.y += self.speed
+        self.rect.y += self.speed  # 敵を下方向に移動させる
         if self.rect.bottom > self.height:
             self.kill()  # 敵が画面から消えたら敵を削除する

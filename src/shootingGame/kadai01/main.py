@@ -1,5 +1,5 @@
 """
-このモジュールはゲームのメインファイルです。
+This module contains the main.
 """
 
 import sys

@@ -1,21 +1,8 @@
 import express, { Request, Response } from 'express';
-import { promisify } from 'util';
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 
 const app = express();
 const port = process.env.PORT || 3000;
-
-// アプリの実行を行う関数
-async function runApp(app: { name: string; command: string }) {
-  try {
-    const { stdout } = await promisify(exec)(`python ${app.command}`);
-    console.log(`${app.name} output:`, stdout.trim());
-    return stdout.trim();
-  } catch (error) {
-    console.error(`Error executing ${app.name}:`, error);
-    return '';
-  }
-}
 
 // ルートハンドラーのインポート
 const indexRouter = require('./routes/index');
@@ -43,9 +30,21 @@ app.post('/run', express.json(), async (req: Request, res: Response) => {
       return;
     }
 
-    const output = await runApp(selectedApp);
+    const pythonProcess = spawn('python', [selectedApp.command]);
+    let output = '';
 
-    res.json({ appName, output });
+    pythonProcess.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      console.error(`Error executing ${appName}:`, data.toString());
+    });
+
+    pythonProcess.on('close', (code) => {
+      console.log(`Process exited with code ${code}`);
+      res.json({ appName, output });
+    });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).send('Internal Server Error');

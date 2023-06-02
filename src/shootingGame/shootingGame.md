@@ -365,7 +365,7 @@ $ python main.py
    - レベルアップ時には、プレイヤーの移動速度や弾の速度を増加させるなどの変更を加えます。
   </details>
 
-## 始まりと終わり
+## 始まりと終わり 01
   1. スタート画面とゲームオーバー画面を作成
 
   <details><summary>start_screen.py</summary>
@@ -441,8 +441,6 @@ class GameOverScreen(pygame.sprite.Sprite):
     このクラスはゲームオーバースクリーンの表示と振る舞いを管理します。
     """
 
-    clock = pygame.time.Clock()
-
     @classmethod
     def draw(cls, screen):
         """
@@ -454,29 +452,37 @@ class GameOverScreen(pygame.sprite.Sprite):
         pygame.font.init()  # フォントの初期化
 
         font = pygame.font.Font(None, 36)
-        gameover_text = font.render("ゲームオーバー", True, (255, 255, 255))
+        gameover_text = font.render("Game Over", True, (255, 255, 255))
         restart_text = font.render(
-            "スペースキーを押して再開", True, (255, 255, 255))
+            "Press SPACE to restart", True, (255, 255, 255))
+        return_text = font.render(
+            "Press ENTER to quit", True, (255, 255, 255))
 
         running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    return
+                    return "exit"  # アプリを終了
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        running = False
+                        return "start_screen"  # スタート画面を表示
+                    elif event.key == pygame.K_RETURN:
+                        pygame.quit()
+                        return "exit"  # アプリを終了
 
             screen.fill((0, 0, 0))
-            screen.blit(gameover_text, (screen.get_width(
-            ) // 2 - gameover_text.get_width() // 2, screen.get_height() // 2 - 50))
+            screen.blit(gameover_text, (screen.get_width() // 2 -
+                                        gameover_text.get_width() // 2, screen.get_height() // 2 - 50))
             screen.blit(restart_text, (screen.get_width() // 2 -
-                        restart_text.get_width() // 2, screen.get_height() // 2))
+                                       restart_text.get_width() // 2, screen.get_height() // 2))
+            screen.blit(return_text, (screen.get_width() // 2 -
+                                      return_text.get_width() // 2, screen.get_height() // 2 + 50))
             pygame.display.flip()
-            cls.clock.tick(60)
+            pygame.time.Clock().tick(60)
 
         pygame.font.quit()  # フォントの終了処理
+        return "start_screen"
 ```
 
   </details>
@@ -526,29 +532,93 @@ from gameover_screen import GameOverScreen
 
   </details>
 
-## 敵に衝突しない
+## 敵に衝突しない　ライフ3 02
   1. Player クラスに check_collision() メソッドを追加します。このメソッドは、プレイヤーと敵キャラの衝突をチェックします。
   1. Enemy クラスに check_collision() メソッドを追加します。このメソッドは、敵キャラと弾の衝突をチェックします。
   1. Player クラスと Enemy クラスの update() メソッド内で、衝突チェックの呼び出しを追加します。
   1. 弾と敵の衝突をチェックする部分で、衝突した敵キャラを削除するのではなく、プレイヤーとの衝突判定を行い、衝突した場合はゲームを終了するようにします。
 
 <details><summary>main.py</summary>
+
   ```python
+...
+
+LIVES = 3  # プレイヤーの初期ライフ数
+
+
+def draw_heart(surface, color, center, size):
+    """
+    ハートマークをドットで描画する関数
+    """
+    x, y = center
+    r = size // 2
+    for dy in range(size):
+        for dx in range(size):
+            if (
+                (dx - r) ** 2 + (dy - r) ** 2 < r ** 2
+                or (abs(dx - r) + abs(dy - r) < r)
+                or (dy > r and (dx - r) ** 2 + (dy - size + r) ** 2 < r ** 2)
+            ):
+                surface.set_at((x - r + dx, y - r + dy), color)
+
+...
+
+    pygame.font.SysFont("Arial", 36)
+
+    # ハートマークの描画に使用するサイズと色
+    heart_size = 20
+    heart_color = (255, 0, 0)
+
+...
+
+    # プレイヤーのライフを設定
+    lives = LIVES
+
+...
+
+                # プレイヤーと敵の衝突検出
+                player_collisions = pygame.sprite.spritecollide(
+                    player, enemies, True)
+                if player_collisions:
+                    lives -= 1
+                    if lives == 0:
+                        running = False
+
+...
+
+                # ライフ表示の描画
+                for i in range(lives):
+                    draw_heart(screen, heart_color,
+                               (WIDTH - 30 - i * 30, 10), heart_size)
+
+...
+
+    # ゲームオーバー画面の表示
+    gameover_result = GameOverScreen.draw(screen)
+    if gameover_result == "start_screen":
+        run_game()  # スタート画面から再開
+
+...
+
+以下を削除
+def update(self, *args):
+    """
+    敵の位置を更新する関数です。
+    敵の位置をスピードに基づいて更新するために呼び出されます。
+    """
+    self.rect.y += self.speed
+    if self.rect.top > self.height:
+        self.rect.bottom = 0
+
+    # 衝突検出
+    collisions = pygame.sprite.spritecollide(self, args[0], True)
+    if collisions:
+        self.kill()
+
+
   ```
 
 </details>
-
-<details><summary>player.py</summary>
-  ```python
-  ```
-</details>
-
-
-<details><summary>enemy.py</summary>
-  ```python
-  ```
-</details>
-
 
 ## 敵の動きのバリエーションを追加する
 * 

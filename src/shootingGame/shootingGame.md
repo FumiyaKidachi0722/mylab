@@ -323,7 +323,7 @@ $ python main.py
     <details>
     - 
     <details>
-1. - [x] [敵に衝突しない](#敵に衝突しない)
+1. - [ ] [敵に衝突しない](#敵に衝突しない)
 　 　<details>
       - 衝突判定の処理を修正する必要があります。現在のコードでは敵と弾が衝突すると敵が消えてしまいますが、敵とプレイヤーの衝突も判定する必要があります。
       - 衝突判定にはpygame.sprite.spritecollide()関数を使用します。プレイヤーと敵のスプライトグループの衝突判定を行い、衝突があった場合にゲームオーバーの処理を追加します。
@@ -904,8 +904,48 @@ digit_patterns = {
 ## 敵の動きのバリエーションを追加する
 * 
 
+<details><summary>main.py</summary>
+
+  ```python
+import random
+import math
+
+...
+
+        self.direction = random.choice([-1, 1])  # ランダムな初期方向を選択
+        self.start_x = random.randint(0, width)  # 出現位置のランダムなx座標を選択
+
+...
+
+        self.rect = self.image.get_rect(center=(self.start_x, 0))
+
+...
+
+        # 曲線を描くようにx座標を変化させる
+        time = pygame.time.get_ticks() / 1000  # 時間の経過を取得
+        amplitude = 100  # 曲線の振幅
+        frequency = 2  # 曲線の周波数
+        self.rect.x = self.start_x + self.direction * \
+            amplitude * math.sin(frequency * time)
+
+        # 画面内に収まるように位置を制限する
+        self.rect.x = max(0, min(self.rect.x, self.width - self.rect.width))
+
+...
+  ```
+
+</details>
+
 ## 複数の敵を同時に出現させる
 * 
+
+<details><summary>main.py</summary>
+
+  ```python
+...
+  ```
+
+</details>
 
 ## 敵がプレイヤーに向かって攻撃する
 * 
@@ -913,5 +953,21 @@ digit_patterns = {
 ## 音楽や効果音の追加
 * 
 
+<details><summary>main.py</summary>
+
+  ```python
+...
+  ```
+
+</details>
+
 ## レベルアップやパワーアップの機能の追加
 * 
+
+<details><summary>main.py</summary>
+
+  ```python
+...
+  ```
+
+</details>

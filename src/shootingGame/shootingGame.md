@@ -176,6 +176,11 @@ if __name__ == "__main__":
 
 </details>
 
+
+***
+ここまで 6/3
+***
+
 <details><summary>player.py</summary>
 
 ```python
@@ -358,7 +363,12 @@ $ python main.py
       - レベルアップ時には、プレイヤーの移動速度や弾の速度を増加させるなどの変更を加えます。
   </details>
 
+***
+
 ## 始まりと終わり
+
+***
+
   1. スタート画面とゲームオーバー画面を作成
 
   <details><summary>start_screen.py</summary>
@@ -525,7 +535,12 @@ from gameover_screen import GameOverScreen
 
   </details>
 
+***
+
 ## 敵に衝突しない
+
+***
+
   1. Player クラスに check_collision() メソッドを追加します。このメソッドは、プレイヤーと敵キャラの衝突をチェックします。
   1. Enemy クラスに check_collision() メソッドを追加します。このメソッドは、敵キャラと弾の衝突をチェックします。
   1. Player クラスと Enemy クラスの update() メソッド内で、衝突チェックの呼び出しを追加します。
@@ -612,8 +627,11 @@ def update(self, *args):
 
 </details>
 
+***
+
 ## スコアの追跡と表示
 
+***
 
 <details><summary>main.py</summary>
 
@@ -901,8 +919,17 @@ digit_patterns = {
 
 </details>
 
+***
+
 ## 敵の動きのバリエーションを追加する
-* 
+
+***
+
+1. 横方向の動き: 敵が画面内を左右に移動するようにします。敵のx座標を更新するために、速度 (self.speed) と方向 (self.direction) の属性を追加します。例えば、敵が左に移動する場合はself.direction = -1、右に移動する場合はself.direction = 1とします。updateメソッド内で、x座標 (self.rect.x) に速度と方向を掛けた値を加算することで、敵を横方向に移動させます。敵が画面端に達した場合、方向を反転させます。
+
+1. ランダムな動き: 敵の動きにランダム性を追加します。randomモジュールを使用して、敵の速度と方向をランダムに設定します。例えば、self.speed = random.randint(1, 5)とすることで、1から5の範囲でランダムな速度を設定します。方向も同様にランダムに設定します。
+
+1. 曲線運動: 敵が直線的な動きではなく曲線を描いて移動するようにします。敵のx座標を時間の経過に応じて変化させることで曲線を描けます。例えば、敵のx座標 (self.rect.x) にsin関数を適用し、時間 (pygame.time.get_ticks()) と速度 (self.speed) を組み合わせることで、x座標を変化させます。y座標 (self.rect.y) は従来通り下方向に移動させます。
 
 <details><summary>main.py</summary>
 
@@ -936,7 +963,12 @@ import math
 
 </details>
 
+***
+
 ## 複数の敵を同時に出現させる
+
+***
+
 * 
 
 <details><summary>main.py</summary>
@@ -946,11 +978,21 @@ import math
   ```
 
 </details>
+
+***
 
 ## 敵がプレイヤーに向かって攻撃する
+
+***
+
 * 
 
+***
+
 ## 音楽や効果音の追加
+
+***
+
 * 
 
 <details><summary>main.py</summary>
@@ -961,7 +1003,12 @@ import math
 
 </details>
 
+***
+
 ## レベルアップやパワーアップの機能の追加
+
+***
+
 * 
 
 <details><summary>main.py</summary>
